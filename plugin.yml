@@ -1,0 +1,9 @@
+name: FastTrain
+main: xigua\FastTrain
+version: 0.1.0
+api: [2.0.0]
+author: xigua7265 (xigua)
+commands:
+ train:
+  description: FastTrain 主指令
+  usage: /train 登车

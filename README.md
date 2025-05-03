@@ -41,3 +41,7 @@
 - 由 [Sprouts340](https://github.com/sprouts340) 制作的 [FastTrain宣传片](https://b23.tv/sPxobqr)
 
 - 由 [Sunch233](https://github.com/sunch233) 提供的部分代码优化建议
+
+## 一些想说的话
+
+- *这破插件我不想更新了(bushi*

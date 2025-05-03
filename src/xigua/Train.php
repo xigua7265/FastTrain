@@ -11,7 +11,7 @@
   _|  _` | (_-<   _|  |   _| _` |  |    \  
  _| \__,_| ___/ \__| _| _| \__,_| _| _| _| 
                                            
- * Copyright (c) 2025 xigua7265 (xigua)
+ * Copyright (c) 2025 xigua7265(xigua)
  * 
  * 基于 MIT 协议授权：
  * - 允许自由使用、复制、修改、合并、发布、分发
@@ -24,7 +24,7 @@
 namespace xigua;
 
 use pocketmine\block\Block;
-use pocketmine\item\Item;
+use pocketmine\item\Item as ItemItem;
 use pocketmine\network\protocol\AddEntityPacket;
 use pocketmine\Player;
 use pocketmine\math\Math;
@@ -50,68 +50,28 @@ class Train extends Vehicle{
 		return "Train";
 	}
 
-	public function onUpdate($currentTick){
-		if($this->closed !== false){
-			return false;
-		}
+//优化代码源自sunch233（qq:2125696621）
+    public function entityBaseTick($tickDiff = 1){
+        $p = $this->getLinkedEntity();
+        if($p instanceof Player){
+            if(!$p->isAlive()){
+                $this->close();
+            }
+            //矿车运行逻辑
+            $playerDirection =  $p->getDirectionVector();
+            $this->motionX = $playerDirection->x * $this->moveSpeed;
+            $this->motionY = $playerDirection->y * $this->moveSpeed;
+            $this->motionZ = $playerDirection->z * $this->moveSpeed;
 
-		$this->lastUpdate = $currentTick;
+            $this->setRotation($p->getYaw() - 90, $p->getPitch());
+        }else{
+            $this->close();
+        }
+        $this->checkObstruction($this->x, $this->y, $this->z);
 
-		$this->timings->startTiming();
-
-		$hasUpdate = false;
-		//parent::onUpdate($currentTick);
-		$this->moveSpeed = 0.75;
-		if($this->isAlive()){
-			$p = $this->getLinkedEntity();
-			if($p instanceof Player){
-				//暂时没有更好的方法修复这个漏洞
-				if($p->getYaw() == null){
-					$this->close();
-				}
-				// 保留原始角度转换方式
-				$yaw = $p->getYaw() / 180 * M_PI;
-				$pitch = $p->getPitch() / 180 * M_PI;
-				
-				// 修改运动计算（三维化）
-				$horizontalFactor = cos($pitch); // 俯仰角影响水平速度
-				$this->motionX = -sin($yaw) * $horizontalFactor;
-				$this->motionZ = cos($yaw) * $horizontalFactor;
-				$this->motionY = -sin($pitch);
-				
-				$this->motionX *= $this->moveSpeed;
-				$this->motionZ *= $this->moveSpeed;
-				$this->motionY *= $this->moveSpeed;
-			}
-
-			$target = $this->getLevel()->getBlock($this->add($this->motionX, $this->motionY, $this->motionZ)->round());
-			$target2 = $this->getLevel()->getBlock($this->add($this->motionX, $this->motionY, $this->motionZ)->floor());
-			
-			// 三维碰撞检测（原逻辑扩展）
-			if($target->getId() != Item::AIR || $target2->getId() != Item::AIR){
-				$hasUpdate = true;
-				// 碰撞时反向运动（简单处理）
-				$this->motionX *= -0.5;
-				$this->motionY *= -0.5;
-				$this->motionZ *= -0.5;
-			}
-
-			if($this->checkObstruction($this->x, $this->y, $this->z)){
-				$hasUpdate = true;
-			}
-
-			$this->move($this->motionX, $this->motionY, $this->motionZ);
-			$this->setRotation($p->getYaw() - 90, $p->getPitch());
-			$this->updateMovement();
-
-			$hasUpdate = true;
-		}else{
-			$this->close();
-		}
-		$this->timings->stopTiming();
-
-		return $hasUpdate or !$this->onGround or abs($this->motionX) > 0.00001 or abs($this->motionY) > 0.00001 or abs($this->motionZ) > 0.00001;
-	}
+        $this->move($this->motionX, $this->motionY, $this->motionZ);
+    }
+//
 
 	public function spawnTo(Player $player){
 		$pk = new AddEntityPacket();

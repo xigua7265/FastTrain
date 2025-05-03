@@ -48,7 +48,7 @@ class FastTrain extends PluginBase implements Listener {
     private $lastPos = [];   // 存储所有实体最后位置
 	private $minDistance = 2;   // 列车之间最小距离
 	private $minTrainId = 3;   // 列车之间最小距离
-	private $moveSpeed = 0.5;   // 列车移动速度
+	private $moveSpeed = 1.0;   // 列车移动速度（改太快容易卡地里）
 	private $tick = 2;   // tick间隔
 
     public function onEnable() {
